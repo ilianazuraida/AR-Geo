@@ -1,0 +1,310 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+ content="width=device-width, initial-scale=1">
+<title>AR-Geo | Dataset AI</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #edf5f8;
+  color: #244357;
+}
+
+header {
+  background: #d9ebf5;
+  padding: 22px;
+  text-align: center;
+}
+
+h1 { margin: 0; }
+
+main {
+  max-width: 720px;
+  margin: auto;
+  padding: 16px;
+}
+
+.panel {
+  background: white;
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+video {
+  width: 100%;
+  background: #152b39;
+  border-radius: 14px;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+button, select {
+  font-size: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 5px 0;
+  width: 100%;
+  border: 1px solid #ccd9e2;
+}
+
+button {
+  background: #f9cc89;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+#preview {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 12px;
+  display: none;
+  margin: 12px auto;
+}
+
+#status {
+  font-size: 14px;
+  color: #456377;
+}
+
+small { color: #607789; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>AR-Geo</h1>
+  <p>Pengumpulan Data Latihan AI</p>
+</header>
+
+<main>
+
+<section class="panel">
+  <h2>1. Pilih Bentuk</h2>
+
+  <select id="shape">
+    <option value="">-- Pilih kategori --</option>
+    <option value="kubus">Kubus</option>
+    <option value="kuboid">Kuboid</option>
+    <option value="prisma_segi_tiga">
+      Prisma segi tiga
+    </option>
+    <option value="kon">Kon</option>
+    <option value="silinder">Silinder</option>
+    <option value="sfera">Sfera</option>
+    <option value="piramid_segi_empat_sama">
+      Piramid segi empat sama
+    </option>
+    <option value="bukan_sasaran">
+      Bukan sasaran
+    </option>
+  </select>
+
+  <small>
+    Kategori ini hanya untuk melabel gambar
+    latihan AI, bukan untuk murid.
+  </small>
+</section>
+
+<section class="panel">
+  <h2>2. Kamera</h2>
+
+  <video id="camera"
+    autoplay playsinline muted></video>
+
+  <button id="startBtn">
+    Buka Kamera
+  </button>
+
+  <button id="stopBtn">
+    Tutup Kamera
+  </button>
+
+  <p id="status">Kamera belum dibuka.</p>
+</section>
+
+<section class="panel">
+  <h2>3. Kumpulkan Gambar</h2>
+
+  <button id="captureBtn" disabled>
+    Ambil Gambar
+  </button>
+
+  <img id="preview" alt="Pratonton gambar">
+
+  <p id="count">Jumlah gambar: 0</p>
+
+  <button id="downloadBtn" disabled>
+    Muat Turun Gambar Terakhir
+  </button>
+
+  <small>
+    Gambar disimpan sementara dalam pelayar.
+    Muat turun gambar sebelum menutup halaman.
+    Tiada gambar dihantar ke pelayan.
+  </small>
+</section>
+
+</main>
+
+<canvas id="canvas" hidden></canvas>
+
+<script>
+let stream = null;
+let lastImage = null;
+let imageCount = 0;
+
+const video = document.getElementById("camera");
+const canvas = document.getElementById("canvas");
+const preview = document.getElementById("preview");
+const statusEl = document.getElementById("status");
+
+const captureBtn =
+  document.getElementById("captureBtn");
+
+const downloadBtn =
+  document.getElementById("downloadBtn");
+
+function setStatus(message) {
+  statusEl.textContent = message;
+}
+
+async function startCamera() {
+  stopCamera();
+
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error(
+        "Pelayar tidak menyokong kamera."
+      );
+    }
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" }
+      },
+      audio: false
+    });
+
+    video.srcObject = stream;
+    await video.play();
+
+    captureBtn.disabled = false;
+    setStatus("Kamera berjaya dibuka.");
+
+  } catch (error) {
+    setStatus("Ralat: " + error.message);
+  }
+}
+
+function stopCamera() {
+  if (stream) {
+    stream.getTracks().forEach(
+      track => track.stop()
+    );
+    stream = null;
+  }
+
+  video.srcObject = null;
+  captureBtn.disabled = true;
+  setStatus("Kamera ditutup.");
+}
+
+function captureImage() {
+  const shape =
+    document.getElementById("shape").value;
+
+  if (!shape) {
+    alert("Sila pilih kategori bentuk dahulu.");
+    return;
+  }
+
+  if (!stream || !video.videoWidth) {
+    alert("Sila buka kamera dahulu.");
+    return;
+  }
+
+  const maxWidth = 640;
+  const scale = Math.min(
+    1, maxWidth / video.videoWidth
+  );
+
+  canvas.width =
+    Math.round(video.videoWidth * scale);
+
+  canvas.height =
+    Math.round(video.videoHeight * scale);
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(
+    video, 0, 0,
+    canvas.width, canvas.height
+  );
+
+  lastImage = {
+    shape,
+    filename:
+      shape + "_" + Date.now() + ".jpg",
+    data: canvas.toDataURL("image/jpeg", 0.85)
+  };
+
+  preview.src = lastImage.data;
+  preview.style.display = "block";
+
+  imageCount++;
+  document.getElementById("count")
+    .textContent =
+      "Jumlah gambar diambil: " + imageCount;
+
+  downloadBtn.disabled = false;
+
+  setStatus(
+    "Gambar " + shape + " berjaya diambil."
+  );
+}
+
+function downloadImage() {
+  if (!lastImage) return;
+
+  const link = document.createElement("a");
+  link.href = lastImage.data;
+  link.download = lastImage.filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+document.getElementById("startBtn")
+  .addEventListener("click", startCamera);
+
+document.getElementById("stopBtn")
+  .addEventListener("click", stopCamera);
+
+captureBtn.addEventListener(
+  "click", captureImage
+);
+
+downloadBtn.addEventListener(
+  "click", downloadImage
+);
+
+window.addEventListener(
+  "pagehide", stopCamera
+);
+</script>
+
+</body>
+</html>
