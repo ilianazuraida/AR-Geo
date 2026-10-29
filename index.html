@@ -3,27 +3,23 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
-<title>AR-Geo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AR-Geo | Kamera Pengecaman</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #edf5f8;
-  color: #244357;
+  background: #f1f7f8;
+  color: #244459;
 }
 
 header {
-  background: #dcecf5;
-  padding: 22px 15px;
   text-align: center;
+  background: #deedf5;
+  padding: 22px 12px;
 }
 
 h1 {
@@ -32,106 +28,103 @@ h1 {
 }
 
 header p {
-  margin-bottom: 0;
-  font-size: 14px;
+  margin: 8px 0 0;
 }
 
 main {
   max-width: 850px;
   margin: auto;
-  padding: 16px;
+  padding: 15px;
 }
 
-.camera-container {
+.viewer {
   position: relative;
-  width: 100%;
-  height: 65vh;
-  min-height: 300px;
-  overflow: hidden;
-  background: #152b39;
+  background: #172d3a;
   border-radius: 18px;
+  overflow: hidden;
 }
 
 video {
+  display: block;
   width: 100%;
-  height: 100%;
+  height: 60vh;
+  min-height: 300px;
   object-fit: cover;
 }
 
-.scan-frame {
+canvas {
   position: absolute;
-  width: 65%;
-  height: 55%;
-  top: 22%;
-  left: 17.5%;
-  border: 2px dashed
-    rgba(255,255,255,0.8);
-  border-radius: 20px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
-.camera-label {
+.hint {
   position: absolute;
-  bottom: 20px;
-  left: 10px;
-  right: 10px;
-  text-align: center;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  background: #142b38c9;
   color: white;
-  background: rgba(0,0,0,0.45);
-  padding: 12px;
+  padding: 10px;
   border-radius: 12px;
+  text-align: center;
   font-size: 14px;
 }
 
-.controls {
+.buttons {
   display: flex;
   gap: 10px;
-  margin-top: 15px;
+  margin: 15px 0;
 }
 
 button {
   flex: 1;
-  padding: 14px;
   border: none;
   border-radius: 12px;
+  background: #397d9b;
+  color: white;
+  padding: 14px;
   font-size: 15px;
   font-weight: bold;
-  background: #f7ca86;
-  color: #244357;
   cursor: pointer;
 }
 
 button.secondary {
-  background: #d9e7ee;
+  background: #607887;
 }
 
-.status-panel {
+button:disabled {
+  opacity: 0.5;
+}
+
+.panel {
   background: white;
-  margin-top: 16px;
+  border-radius: 18px;
   padding: 18px;
-  border-radius: 16px;
-  text-align: center;
+  margin: 12px 0;
+  box-shadow: 0 2px 12px #24445912;
 }
 
-#status {
-  font-size: 15px;
+.panel h2 {
+  margin-top: 0;
+}
+
+.muted {
+  color: #637b88;
+}
+
+ul {
+  line-height: 1.8;
+  padding-left: 22px;
 }
 
 footer {
   text-align: center;
-  padding: 15px;
-  color: #607789;
-  font-size: 12px;
-}
-
-@media(max-width:600px) {
-  .camera-container {
-    height: 70vh;
-  }
-
-  h1 {
-    font-size: 28px;
-  }
+  padding: 20px;
+  color: #6a818c;
+  font-size: 13px;
 }
 </style>
 </head>
@@ -140,133 +133,417 @@ footer {
 
 <header>
   <h1>AR-Geo</h1>
-  <p>Geometri 3D Tahun 3</p>
+  <p>Teroka Bentuk Geometri 3D • Tahun 3</p>
 </header>
 
 <main>
 
-<div class="camera-container">
+  <section class="viewer">
+    <video id="camera" autoplay playsinline muted></video>
+    <canvas id="overlay"></canvas>
 
-  <video
-    id="camera"
-    autoplay
-    playsinline
-    muted>
-  </video>
+    <div class="hint">
+      Halakan kamera kepada satu objek untuk pengecaman.
+    </div>
+  </section>
 
-  <div class="scan-frame"></div>
-
-  <div class="camera-label">
-    Halakan kamera kepada objek
-    berbentuk 3D
+  <div class="buttons">
+    <button id="start">Buka Kamera & AI</button>
+    <button id="stop" class="secondary">Tutup Kamera</button>
   </div>
 
-</div>
+  <section class="panel">
+    <h2>Status Kamera</h2>
+    <p id="status">Kamera belum dibuka.</p>
+    <p id="detected" class="muted">Objek dikesan: —</p>
+  </section>
 
-<div class="controls">
+  <section class="panel">
+    <h2>Maklumat Bentuk Geometri</h2>
+    <div id="shape">
+      <p class="muted">
+        Maklumat bentuk akan dipaparkan apabila AI
+        mengesan objek yang mempunyai padanan.
+      </p>
+    </div>
+  </section>
 
-  <button onclick="startCamera()">
-    Buka Kamera
-  </button>
-
-  <button
-    class="secondary"
-    onclick="stopCamera()">
-    Tutup Kamera
-  </button>
-
-</div>
-
-<div class="status-panel">
-  <p id="status">
-    Kamera belum dibuka.
-  </p>
-</div>
+  <section class="panel">
+    <h2>Nota</h2>
+    <p>
+      AI versi ini mengenal pasti jenis objek.
+      Cadangan bentuk perlu disahkan dengan melihat
+      bentuk sebenar objek.
+    </p>
+  </section>
 
 </main>
 
-<footer>
-  AR-Geo | Matematik Tahun 3
-</footer>
+<footer>AR-Geo | Matematik Tahun 3</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 
 <script>
+const video = document.getElementById("camera");
+const canvas = document.getElementById("overlay");
+const ctx = canvas.getContext("2d");
+
+const statusText = document.getElementById("status");
+const detectedText = document.getElementById("detected");
+const shapeBox = document.getElementById("shape");
+
+const startButton = document.getElementById("start");
 
 let stream = null;
+let model = null;
+let running = false;
+let session = 0;
 
-const camera =
-  document.getElementById("camera");
+const shapes = {
+  kubus: {
+    category: "Prisma",
+    facts: [
+      "6 permukaan rata berbentuk segi empat sama",
+      "8 bucu",
+      "12 tepi",
+      "2 tapak segi empat sama yang selari"
+    ]
+  },
 
-const statusText =
-  document.getElementById("status");
+  kuboid: {
+    category: "Prisma",
+    facts: [
+      "6 permukaan rata",
+      "8 bucu",
+      "12 tepi",
+      "2 tapak segi empat tepat yang selari"
+    ]
+  },
 
-async function startCamera() {
+  "prisma segi tiga": {
+    category: "Prisma",
+    facts: [
+      "5 permukaan rata",
+      "6 bucu",
+      "9 tepi",
+      "2 tapak segi tiga yang selari"
+    ]
+  },
 
-  try {
+  kon: {
+    category: "Bukan prisma",
+    facts: [
+      "1 permukaan rata berbentuk bulatan",
+      "1 permukaan melengkung",
+      "1 bucu",
+      "1 tepi melengkung"
+    ]
+  },
 
-    stopCamera();
+  silinder: {
+    category: "Bukan prisma",
+    facts: [
+      "2 permukaan rata berbentuk bulatan",
+      "1 permukaan melengkung",
+      "0 bucu",
+      "2 tepi melengkung"
+    ]
+  },
 
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
+  sfera: {
+    category: "Bukan prisma",
+    facts: [
+      "1 permukaan melengkung",
+      "0 permukaan rata",
+      "0 bucu",
+      "0 tepi"
+    ]
+  },
 
-      throw new Error(
-        "Pelayar tidak menyokong kamera."
-      );
-    }
+  "piramid segi empat sama": {
+    category: "Bukan prisma",
+    facts: [
+      "5 permukaan rata",
+      "5 bucu",
+      "8 tepi",
+      "1 tapak segi empat sama"
+    ]
+  }
+};
 
-    stream =
-      await navigator.mediaDevices.getUserMedia({
+// Padanan sementara berdasarkan jenis objek.
+// Ini BUKAN pengelasan geometri sebenar.
+const mappings = {
+  "sports ball": "sfera",
+  "book": "kuboid",
+  "laptop": "kuboid",
+  "cell phone": "kuboid",
+  "keyboard": "kuboid",
+  "tv": "kuboid",
+  "remote": "kuboid",
+  "suitcase": "kuboid",
 
-        video: {
-          facingMode: {
-            ideal: "environment"
-          }
-        },
+  // Bentuk objek ini boleh berbeza.
+  "bottle": null,
+  "cup": null,
+  "vase": null,
+  "bowl": null
+};
 
-        audio: false
+function renderShape(name, objectName, confidence) {
 
-      });
+  const item = shapes[name];
 
-    camera.srcObject = stream;
-
-    await camera.play();
-
-    statusText.textContent =
-      "Kamera sedang aktif.";
-
-  } catch(error) {
-
-    statusText.textContent =
-      "Kamera tidak dapat dibuka: "
-      + error.message;
-
+  if (!item) {
+    shapeBox.innerHTML =
+      '<p class="muted">Bentuk geometri belum dapat dipastikan. Cuba objek lain atau lihat dari sudut berbeza.</p>';
+    return;
   }
 
+  const title = document.createElement("h3");
+  title.textContent =
+    "Cadangan Bentuk: " +
+    name.charAt(0).toUpperCase() +
+    name.slice(1);
+
+  const category = document.createElement("p");
+  category.textContent = "Kategori: " + item.category;
+
+  const note = document.createElement("p");
+  note.className = "muted";
+  note.textContent =
+    "Objek: " + objectName +
+    " | Keyakinan pengecaman objek: " +
+    Math.round(confidence * 100) + "%";
+
+  const list = document.createElement("ul");
+
+  item.facts.forEach(function(fact) {
+    const li = document.createElement("li");
+    li.textContent = fact;
+    list.appendChild(li);
+  });
+
+  const warning = document.createElement("p");
+  warning.className = "muted";
+  warning.textContent =
+    "Sahkan bentuk sebenar objek. Keyakinan di atas bukan keyakinan pengecaman geometri.";
+
+  shapeBox.replaceChildren(
+    title,
+    category,
+    note,
+    list,
+    warning
+  );
 }
 
 function stopCamera() {
 
-  if(stream) {
+  running = false;
+  session++;
 
-    stream.getTracks().forEach(
-      track => track.stop()
-    );
-
+  if (stream) {
+    stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
     stream = null;
-
   }
 
-  camera.srcObject = null;
+  video.srcObject = null;
 
-  statusText.textContent =
-    "Kamera ditutup.";
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  statusText.textContent = "Kamera ditutup.";
+  startButton.disabled = false;
 }
 
-window.addEventListener(
-  "pagehide",
-  stopCamera
-);
+async function startCamera() {
 
+  stopCamera();
+
+  const currentSession = ++session;
+
+  startButton.disabled = true;
+
+  statusText.textContent =
+    "Meminta kebenaran kamera...";
+
+  try {
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+      throw new Error(
+        "Kamera tidak disokong. Gunakan Safari atau Chrome."
+      );
+    }
+
+    const newStream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: "environment" }
+        }
+      });
+
+    if (currentSession !== session) {
+      newStream.getTracks().forEach(t => t.stop());
+      return;
+    }
+
+    stream = newStream;
+    video.srcObject = stream;
+
+    await video.play();
+
+    statusText.textContent =
+      "Memuatkan model AI... Sila tunggu.";
+
+    if (!window.cocoSsd) {
+      throw new Error(
+        "Model AI gagal dimuatkan. Semak internet."
+      );
+    }
+
+    if (!model) {
+      model = await cocoSsd.load();
+    }
+
+    if (currentSession !== session) return;
+
+    running = true;
+
+    statusText.textContent =
+      "Kamera dan AI aktif. Halakan kamera kepada objek.";
+
+    detectObjects(currentSession);
+
+  } catch (error) {
+
+    stopCamera();
+
+    statusText.textContent =
+      "Tidak dapat memulakan kamera: " +
+      error.message;
+  }
+}
+
+async function detectObjects(currentSession) {
+
+  if (!running || currentSession !== session) return;
+
+  try {
+
+    if (video.readyState >= 2) {
+
+      const predictions = await model.detect(video);
+
+      if (!running || currentSession !== session) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      ctx.clearRect(
+        0, 0,
+        canvas.width,
+        canvas.height
+      );
+
+      const found = predictions
+        .filter(p => p.score >= 0.55)
+        .sort((a, b) => b.score - a.score);
+
+      found.forEach(function(p) {
+
+        const [x, y, w, h] = p.bbox;
+
+        ctx.strokeStyle = "#aee9fb";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(x, y, w, h);
+
+        ctx.fillStyle = "#12394c";
+        ctx.fillRect(
+          x,
+          Math.max(0, y - 30),
+          Math.min(
+            canvas.width - x,
+            Math.max(120, p.class.length * 12)
+          ),
+          30
+        );
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "19px Arial";
+
+        ctx.fillText(
+          p.class + " " +
+          Math.round(p.score * 100) + "%",
+          x + 5,
+          Math.max(21, y - 8)
+        );
+
+      });
+
+      if (found.length > 0) {
+
+        const top = found[0];
+
+        detectedText.textContent =
+          "Objek dikesan: " +
+          top.class +
+          " (" +
+          Math.round(top.score * 100) +
+          "%)";
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            mappings,
+            top.class
+          )
+        ) {
+
+          renderShape(
+            mappings[top.class],
+            top.class,
+            top.score
+          );
+
+        } else {
+
+          renderShape(null);
+        }
+
+      } else {
+
+        detectedText.textContent =
+          "Objek dikesan: —";
+
+        renderShape(null);
+      }
+    }
+
+  } catch (error) {
+
+    statusText.textContent =
+      "Ralat pengecaman: " +
+      error.message;
+  }
+
+  if (running && currentSession === session) {
+    setTimeout(function() {
+      detectObjects(currentSession);
+    }, 450);
+  }
+}
+
+document.getElementById("start")
+  .addEventListener("click", startCamera);
+
+document.getElementById("stop")
+  .addEventListener("click", stopCamera);
+
+window.addEventListener("pagehide", stopCamera);
 </script>
 
 </body>
