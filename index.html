@@ -3,101 +3,271 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AR-Geo Tahun 3</title>
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>AR-Geo</title>
+
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #edf6f7;
-  color: #173b4b;
+  background: #edf5f8;
+  color: #244357;
+}
+
+header {
+  background: #dcecf5;
+  padding: 22px 15px;
   text-align: center;
 }
-header { background: #d7edf0; padding: 20px; }
-main { max-width: 800px; margin: auto; padding: 16px; }
+
+h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+header p {
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
+main {
+  max-width: 850px;
+  margin: auto;
+  padding: 16px;
+}
+
+.camera-container {
+  position: relative;
+  width: 100%;
+  height: 65vh;
+  min-height: 300px;
+  overflow: hidden;
+  background: #152b39;
+  border-radius: 18px;
+}
+
 video {
   width: 100%;
-  max-height: 60vh;
-  background: #10242b;
-  border-radius: 16px;
+  height: 100%;
   object-fit: cover;
 }
-button, select {
-  padding: 12px;
-  margin: 6px;
-  border: 0;
-  border-radius: 12px;
-  font-size: 16px;
+
+.scan-frame {
+  position: absolute;
+  width: 65%;
+  height: 55%;
+  top: 22%;
+  left: 17.5%;
+  border: 2px dashed
+    rgba(255,255,255,0.8);
+  border-radius: 20px;
+  pointer-events: none;
 }
-button { background: #ffcf8a; cursor: pointer; }
-section {
+
+.camera-label {
+  position: absolute;
+  bottom: 20px;
+  left: 10px;
+  right: 10px;
+  text-align: center;
+  color: white;
+  background: rgba(0,0,0,0.45);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  background: #f7ca86;
+  color: #244357;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #d9e7ee;
+}
+
+.status-panel {
   background: white;
-  border-radius: 16px;
-  padding: 16px;
   margin-top: 16px;
+  padding: 18px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+#status {
+  font-size: 15px;
+}
+
+footer {
+  text-align: center;
+  padding: 15px;
+  color: #607789;
+  font-size: 12px;
+}
+
+@media(max-width:600px) {
+  .camera-container {
+    height: 70vh;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
 }
 </style>
 </head>
+
 <body>
+
 <header>
-  <h1>AR-Geo: Peneroka Bentuk</h1>
-  <p>Kenali bentuk 3D di sekeliling kita!</p>
+  <h1>AR-Geo</h1>
+  <p>Geometri 3D Tahun 3</p>
 </header>
+
 <main>
-  <video id="camera" autoplay playsinline muted></video>
-  <div>
-    <button onclick="startCamera()">Buka Kamera</button>
-    <button onclick="stopCamera()">Tutup Kamera</button>
+
+<div class="camera-container">
+
+  <video
+    id="camera"
+    autoplay
+    playsinline
+    muted>
+  </video>
+
+  <div class="scan-frame"></div>
+
+  <div class="camera-label">
+    Halakan kamera kepada objek
+    berbentuk 3D
   </div>
-  <section>
-    <h2>Jom Kenali Bentuk!</h2>
-    <p>Versi awal: pilih bentuk secara manual.</p>
-    <select id="shape" onchange="showShape()">
-      <option value="">Pilih bentuk</option>
-      <option>Kubus</option>
-      <option>Kuboid</option>
-      <option>Prisma segi tiga</option>
-      <option>Kon</option>
-      <option>Silinder</option>
-      <option>Sfera</option>
-      <option>Piramid segi empat sama</option>
-    </select>
-    <div id="result"></div>
-  </section>
+
+</div>
+
+<div class="controls">
+
+  <button onclick="startCamera()">
+    Buka Kamera
+  </button>
+
+  <button
+    class="secondary"
+    onclick="stopCamera()">
+    Tutup Kamera
+  </button>
+
+</div>
+
+<div class="status-panel">
+  <p id="status">
+    Kamera belum dibuka.
+  </p>
+</div>
+
 </main>
+
+<footer>
+  AR-Geo | Matematik Tahun 3
+</footer>
+
 <script>
-let stream;
-const camera = document.getElementById("camera");
+
+let stream = null;
+
+const camera =
+  document.getElementById("camera");
+
+const statusText =
+  document.getElementById("status");
 
 async function startCamera() {
+
   try {
+
     stopCamera();
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } },
-      audio: false
-    });
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+
+      throw new Error(
+        "Pelayar tidak menyokong kamera."
+      );
+    }
+
+    stream =
+      await navigator.mediaDevices.getUserMedia({
+
+        video: {
+          facingMode: {
+            ideal: "environment"
+          }
+        },
+
+        audio: false
+
+      });
+
     camera.srcObject = stream;
+
     await camera.play();
-  } catch (error) {
-    alert("Kamera tidak dapat dibuka: " + error.message);
+
+    statusText.textContent =
+      "Kamera sedang aktif.";
+
+  } catch(error) {
+
+    statusText.textContent =
+      "Kamera tidak dapat dibuka: "
+      + error.message;
+
   }
+
 }
 
 function stopCamera() {
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
+
+  if(stream) {
+
+    stream.getTracks().forEach(
+      track => track.stop()
+    );
+
     stream = null;
+
   }
+
   camera.srcObject = null;
+
+  statusText.textContent =
+    "Kamera ditutup.";
+
 }
 
-function showShape() {
-  const shape = document.getElementById("shape").value;
-  const prism = ["Kubus", "Kuboid", "Prisma segi tiga"];
-  document.getElementById("result").textContent =
-    shape ? shape + " — " +
-    (prism.includes(shape) ? "Prisma" : "Bukan prisma") : "";
-}
+window.addEventListener(
+  "pagehide",
+  stopCamera
+);
+
 </script>
+
 </body>
 </html>
