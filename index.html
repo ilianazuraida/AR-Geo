@@ -3,193 +3,136 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AR-Geo | Teroka Bentuk 3D</title>
+
 <style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: #eff6f8;
-  color: #25475b;
-  font-family: Arial, sans-serif;
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Arial,sans-serif;
+ background:#eff6f8;color:#25475b
 }
-
-header {
-  text-align: center;
-  background: #dcecf4;
-  padding: 20px 10px;
+header{
+ text-align:center;background:#dcecf4;
+ padding:20px 10px
 }
-
-h1 { margin: 0; font-size: 32px; }
-header p { margin: 7px 0 0; }
-
-main {
-  max-width: 860px;
-  margin: auto;
-  padding: 14px;
+h1{margin:0;font-size:32px}
+header p{margin:7px 0 0}
+main{max-width:860px;margin:auto;padding:14px}
+.viewer{
+ position:relative;height:min(65vh,560px);
+ min-height:330px;background:#18303d;
+ border-radius:18px;overflow:hidden
 }
-
-.viewer {
-  position: relative;
-  height: min(65vh, 560px);
-  min-height: 330px;
-  background: #18303d;
-  border-radius: 18px;
-  overflow: hidden;
+#camera{
+ position:absolute;inset:0;width:100%;
+ height:100%;object-fit:cover
 }
-
-#camera {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+#overlay{
+ position:absolute;inset:0;width:100%;
+ height:100%;pointer-events:none
 }
-
-#overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+#ar3d{
+ position:absolute;inset:0;z-index:3;
+ touch-action:none
 }
-
-#ar3d {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  touch-action: none;
+#ar3d canvas{display:block;width:100%;height:100%}
+.badge{
+ position:absolute;top:12px;left:12px;z-index:5;
+ background:#ffffffeb;color:#28566d;
+ padding:9px 12px;border-radius:12px;
+ font-weight:bold;font-size:13px;
+ pointer-events:none
 }
-
-#ar3d canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+.hint{
+ position:absolute;bottom:12px;left:12px;
+ right:12px;z-index:5;padding:10px;
+ background:#18303dd9;color:white;
+ text-align:center;border-radius:12px;
+ font-size:13px;pointer-events:none
 }
-
-.badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 5;
-  background: #ffffffeb;
-  color: #28566d;
-  padding: 9px 12px;
-  border-radius: 12px;
-  font-weight: bold;
-  font-size: 13px;
-  pointer-events: none;
+.buttons{display:flex;gap:10px;margin:14px 0}
+button{
+ flex:1;border:0;border-radius:12px;
+ background:#397d9b;color:white;
+ padding:14px;font-size:15px;
+ font-weight:bold;cursor:pointer
 }
-
-.hint {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  right: 12px;
-  z-index: 5;
-  padding: 10px;
-  text-align: center;
-  background: #18303dd9;
-  color: white;
-  border-radius: 12px;
-  font-size: 13px;
-  pointer-events: none;
+button.secondary{background:#647f8e}
+button:disabled{opacity:.5}
+.panel{
+ background:white;border-radius:18px;
+ padding:18px;margin:12px 0;
+ box-shadow:0 2px 12px #24445912
 }
-
-.buttons {
-  display: flex;
-  gap: 10px;
-  margin: 14px 0;
-}
-
-button {
-  flex: 1;
-  border: 0;
-  border-radius: 12px;
-  background: #397d9b;
-  color: white;
-  padding: 14px;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button.secondary { background: #647f8e; }
-button:disabled { opacity: .5; }
-
-.panel {
-  background: white;
-  border-radius: 18px;
-  padding: 18px;
-  margin: 12px 0;
-  box-shadow: 0 2px 12px #24445912;
-}
-
-.panel h2 { margin: 0 0 10px; }
-.muted { color: #617c89; }
-ul { line-height: 1.8; padding-left: 22px; }
-
-footer {
-  text-align: center;
-  padding: 18px;
-  font-size: 12px;
-  color: #6c8590;
+.panel h2{margin:0 0 10px}
+.muted{color:#617c89}
+ul{line-height:1.8;padding-left:22px}
+footer{
+ text-align:center;padding:18px;
+ color:#6c8590;font-size:12px
 }
 </style>
 </head>
 
 <body>
 <header>
-  <h1>AR-Geo</h1>
-  <p>Teroka Bentuk Geometri 3D • Tahun 3</p>
+ <h1>AR-Geo</h1>
+ <p>Teroka Bentuk Geometri 3D • Tahun 3</p>
 </header>
 
 <main>
-  <section class="viewer">
-    <video id="camera" autoplay muted playsinline></video>
-    <canvas id="overlay"></canvas>
-    <div id="ar3d"></div>
+ <section class="viewer">
+  <video id="camera" autoplay muted playsinline></video>
+  <canvas id="overlay"></canvas>
+  <div id="ar3d"></div>
 
-    <div class="badge" id="badge">
-      Sedia untuk mengimbas
-    </div>
-
-    <div class="hint">
-      Halakan kamera kepada objek.
-      Seret untuk putar • Cubit untuk zum.
-    </div>
-  </section>
-
-  <div class="buttons">
-    <button id="start">Buka Kamera</button>
-    <button id="stop" class="secondary">Tutup Kamera</button>
+  <div class="badge" id="badge">
+   Sedia untuk mengimbas
   </div>
 
-  <section class="panel">
-    <h2>Status</h2>
-    <p id="status">Kamera belum dibuka.</p>
-    <p id="detected" class="muted">Objek dikesan: —</p>
-  </section>
+  <div class="hint">
+   Halakan kamera kepada objek.
+   Seret untuk putar • Cubit untuk zum.
+  </div>
+ </section>
 
-  <section class="panel">
-    <h2>Maklumat Bentuk Geometri</h2>
-    <div id="info">
-      <p class="muted">
-        Buka kamera dan halakan kepada objek
-        untuk melihat bentuk geometri 3D.
-      </p>
-    </div>
-  </section>
+ <div class="buttons">
+  <button id="start">Buka Kamera</button>
+  <button id="stop" class="secondary">
+   Tutup Kamera
+  </button>
+ </div>
 
-  <section class="panel">
-    <h2>Perhatian</h2>
-    <p class="muted">
-      Sistem ini mengenal pasti jenis objek
-      dan mencadangkan bentuk geometri.
-      Sahkan bentuk sebenar objek.
-    </p>
-  </section>
+ <section class="panel">
+  <h2>Status</h2>
+  <p id="status">Kamera belum dibuka.</p>
+  <p id="detected" class="muted">Objek dikesan: —</p>
+ </section>
+
+ <section class="panel">
+  <h2>Maklumat Bentuk Geometri</h2>
+  <div id="info">
+   <p class="muted">
+    Buka kamera dan halakan kepada objek
+    untuk melihat bentuk geometri 3D.
+   </p>
+  </div>
+ </section>
+
+ <section class="panel">
+  <h2>Contoh Objek Geometri</h2>
+  <p class="muted">
+   Contoh untuk tujuh bentuk: dadu dan kotak
+   tisu berbentuk kubus, buku, khemah berbentuk
+   prisma segi tiga, topi parti, botol silinder,
+   bola dan khemah berbentuk piramid segi empat sama.
+  </p>
+  <p class="muted">
+   Sesetengah contoh memerlukan model pengecaman
+   tambahan sebelum boleh dikesan secara automatik.
+  </p>
+ </section>
 </main>
 
 <footer>AR-Geo | Matematik Tahun 3</footer>
@@ -198,472 +141,552 @@ footer {
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 
 <script type="module">
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js";
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js";
 
-const video = document.getElementById("camera");
-const overlay = document.getElementById("overlay");
-const ctx = overlay.getContext("2d");
+const video=document.getElementById("camera");
+const overlay=document.getElementById("overlay");
+const ctx=overlay.getContext("2d");
+const host=document.getElementById("ar3d");
+const badge=document.getElementById("badge");
+const statusEl=document.getElementById("status");
+const detectedEl=document.getElementById("detected");
+const info=document.getElementById("info");
+const startBtn=document.getElementById("start");
 
-const host = document.getElementById("ar3d");
-const badge = document.getElementById("badge");
-const statusEl = document.getElementById("status");
-const detectedEl = document.getElementById("detected");
-const info = document.getElementById("info");
-const startBtn = document.getElementById("start");
+// MAKLUMAT TUJUH BENTUK
 
-const DATA = {
-  kubus: {
-    category: "Prisma",
-    facts: [
-      "6 permukaan rata berbentuk segi empat sama",
-      "8 bucu",
-      "12 tepi"
-    ]
-  },
-  kuboid: {
-    category: "Prisma",
-    facts: [
-      "6 permukaan rata",
-      "8 bucu",
-      "12 tepi"
-    ]
-  },
-  "prisma segi tiga": {
-    category: "Prisma",
-    facts: [
-      "5 permukaan rata",
-      "6 bucu",
-      "9 tepi"
-    ]
-  },
-  kon: {
-    category: "Bukan prisma",
-    facts: [
-      "1 permukaan rata berbentuk bulatan",
-      "1 permukaan melengkung",
-      "1 bucu",
-      "1 tepi melengkung"
-    ]
-  },
-  silinder: {
-    category: "Bukan prisma",
-    facts: [
-      "2 permukaan rata berbentuk bulatan",
-      "1 permukaan melengkung",
-      "0 bucu",
-      "2 tepi melengkung"
-    ]
-  },
-  sfera: {
-    category: "Bukan prisma",
-    facts: [
-      "1 permukaan melengkung",
-      "0 permukaan rata",
-      "0 bucu",
-      "0 tepi"
-    ]
-  },
-  "piramid segi empat sama": {
-    category: "Bukan prisma",
-    facts: [
-      "5 permukaan rata",
-      "5 bucu",
-      "8 tepi"
-    ]
-  }
+const DATA={
+ kubus:{
+  category:"Prisma",
+  facts:[
+   "6 permukaan rata berbentuk segi empat sama",
+   "8 bucu","12 tepi"
+  ]
+ },
+ kuboid:{
+  category:"Prisma",
+  facts:[
+   "6 permukaan rata","8 bucu","12 tepi"
+  ]
+ },
+ "prisma segi tiga":{
+  category:"Prisma",
+  facts:[
+   "5 permukaan rata","6 bucu","9 tepi"
+  ]
+ },
+ kon:{
+  category:"Bukan prisma",
+  facts:[
+   "1 permukaan rata berbentuk bulatan",
+   "1 permukaan melengkung",
+   "1 bucu","1 tepi melengkung"
+  ]
+ },
+ silinder:{
+  category:"Bukan prisma",
+  facts:[
+   "2 permukaan rata berbentuk bulatan",
+   "1 permukaan melengkung",
+   "0 bucu","2 tepi melengkung"
+  ]
+ },
+ sfera:{
+  category:"Bukan prisma",
+  facts:[
+   "1 permukaan melengkung",
+   "0 permukaan rata",
+   "0 bucu","0 tepi"
+  ]
+ },
+ "piramid segi empat sama":{
+  category:"Bukan prisma",
+  facts:[
+   "5 permukaan rata","5 bucu","8 tepi"
+  ]
+ }
 };
 
-// Padanan sementara berdasarkan jenis objek.
-const mapping = {
-  "sports ball": "sfera",
-  "book": "kuboid",
-  "laptop": "kuboid",
-  "keyboard": "kuboid",
-  "suitcase": "kuboid",
-  "cell phone": "kuboid",
-  "remote": "kuboid",
-  "tv": "kuboid"
+// PADANAN YANG DISOKONG OLEH COCO-SSD
+// Ini ialah cadangan berdasarkan nama objek,
+// bukan pengukuran geometri sebenar.
+
+const mapping={
+ "sports ball":"sfera",
+ "bottle":"silinder",
+ "cup":"silinder",
+ "book":"kuboid",
+ "laptop":"kuboid",
+ "keyboard":"kuboid",
+ "suitcase":"kuboid",
+ "cell phone":"kuboid",
+ "remote":"kuboid",
+ "tv":"kuboid"
 };
 
-let stream = null;
-let aiModel = null;
-let running = false;
-let session = 0;
-let currentShape = null;
-let mesh = null;
-let zoom = 4.2;
-let lastSeen = 0;
+// PADANAN UNTUK MODEL TAMBAHAN PADA MASA DEPAN.
+// COCO-SSD TIDAK MENGESAN LABEL INI.
 
-const scene = new THREE.Scene();
-const camera3d = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+const futureMapping={
+ "dice":"kubus",
+ "cube tissue box":"kubus",
+ "triangular prism tent":"prisma segi tiga",
+ "square pyramid tent":"piramid segi empat sama",
+ "party hat":"kon"
+};
 
-camera3d.position.set(0, 0.8, zoom);
-camera3d.lookAt(0, 0, 0);
+// KEADAAN APLIKASI
 
-const renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  alpha: true,
-  powerPreference: "low-power"
+let stream=null;
+let aiModel=null;
+let running=false;
+let session=0;
+let currentShape=null;
+let mesh=null;
+let zoom=4.2;
+let lastSeen=0;
+
+// THREE.JS
+
+const scene=new THREE.Scene();
+
+const camera3d=new THREE.PerspectiveCamera(
+ 40,1,.1,100
+);
+
+camera3d.position.set(0,.8,zoom);
+camera3d.lookAt(0,0,0);
+
+const renderer=new THREE.WebGLRenderer({
+ antialias:true,
+ alpha:true,
+ powerPreference:"low-power"
 });
 
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
-renderer.setClearColor(0x000000, 0);
+renderer.setPixelRatio(
+ Math.min(window.devicePixelRatio||1,1.5)
+);
+renderer.setClearColor(0x000000,0);
 host.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x91b0c3, 2.2));
+scene.add(
+ new THREE.HemisphereLight(
+  0xffffff,0x91b0c3,2.2
+ )
+);
 
-const light = new THREE.DirectionalLight(0xffffff, 2.2);
-light.position.set(3, 5, 6);
+const light=new THREE.DirectionalLight(
+ 0xffffff,2.2
+);
+light.position.set(3,5,6);
 scene.add(light);
 
-function resize3D() {
-  const w = host.clientWidth;
-  const h = host.clientHeight;
-  if (!w || !h) return;
-
-  camera3d.aspect = w / h;
-  camera3d.updateProjectionMatrix();
-  renderer.setSize(w, h, false);
+function resize3D(){
+ const w=host.clientWidth;
+ const h=host.clientHeight;
+ if(!w||!h)return;
+ camera3d.aspect=w/h;
+ camera3d.updateProjectionMatrix();
+ renderer.setSize(w,h,false);
 }
 
 resize3D();
-window.addEventListener("resize", resize3D);
+window.addEventListener("resize",resize3D);
 
-if (window.ResizeObserver) {
-  new ResizeObserver(resize3D).observe(host);
+if(window.ResizeObserver){
+ new ResizeObserver(resize3D).observe(host);
 }
 
-function setZoom(value) {
-  zoom = Math.max(2.3, Math.min(9, value));
-  camera3d.position.set(0, zoom * 0.19, zoom);
-  camera3d.lookAt(0, 0, 0);
+// ZUM
+
+function setZoom(value){
+ zoom=Math.max(2.3,Math.min(9,value));
+ camera3d.position.set(0,zoom*.19,zoom);
+ camera3d.lookAt(0,0,0);
 }
 
-const pointers = new Map();
-let previousPinch = null;
+// PUTAR DAN ZUM
 
-host.addEventListener("pointerdown", e => {
-  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  host.setPointerCapture(e.pointerId);
+const pointers=new Map();
+let previousPinch=null;
+
+host.addEventListener("pointerdown",e=>{
+ pointers.set(e.pointerId,{
+  x:e.clientX,y:e.clientY
+ });
+ host.setPointerCapture(e.pointerId);
 });
 
-host.addEventListener("pointermove", e => {
-  if (!pointers.has(e.pointerId)) return;
+host.addEventListener("pointermove",e=>{
+ if(!pointers.has(e.pointerId))return;
 
-  const previous = pointers.get(e.pointerId);
-  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+ const previous=pointers.get(e.pointerId);
 
-  if (!mesh) return;
+ pointers.set(e.pointerId,{
+  x:e.clientX,y:e.clientY
+ });
 
-  if (pointers.size === 1) {
-    mesh.rotation.y += (e.clientX - previous.x) * 0.012;
-    mesh.rotation.x += (e.clientY - previous.y) * 0.012;
-  } else if (pointers.size === 2) {
-    const points = [...pointers.values()];
-    const distance = Math.hypot(
-      points[0].x - points[1].x,
-      points[0].y - points[1].y
-    );
+ if(!mesh)return;
 
-    if (previousPinch !== null) {
-      setZoom(zoom + (previousPinch - distance) * 0.012);
-    }
-
-    previousPinch = distance;
-  }
-});
-
-function endPointer(e) {
-  pointers.delete(e.pointerId);
-  previousPinch = null;
-}
-
-host.addEventListener("pointerup", endPointer);
-host.addEventListener("pointercancel", endPointer);
-
-host.addEventListener("wheel", e => {
-  e.preventDefault();
-  setZoom(zoom + Math.sign(e.deltaY) * 0.3);
-}, { passive: false });
-
-function makeGeometry(name) {
-  switch (name) {
-    case "kubus":
-      return new THREE.BoxGeometry(1.7, 1.7, 1.7);
-
-    case "kuboid":
-      return new THREE.BoxGeometry(2.1, 1.3, 1.4);
-
-    case "prisma segi tiga": {
-      const shape = new THREE.Shape();
-      shape.moveTo(-1, -0.7);
-      shape.lineTo(1, -0.7);
-      shape.lineTo(0, 0.95);
-      shape.closePath();
-
-      const geometry = new THREE.ExtrudeGeometry(shape, {
-        depth: 1.3,
-        bevelEnabled: false
-      });
-
-      geometry.translate(0, 0, -0.65);
-      return geometry;
-    }
-
-    case "kon":
-      return new THREE.ConeGeometry(0.95, 1.9, 48);
-
-    case "silinder":
-      return new THREE.CylinderGeometry(0.9, 0.9, 1.8, 48);
-
-    case "sfera":
-      return new THREE.SphereGeometry(1, 32, 24);
-
-    case "piramid segi empat sama":
-      return new THREE.CylinderGeometry(0, 1.15, 1.9, 4, 1);
-
-    default:
-      return null;
-  }
-}
-
-function removeShape() {
-  if (!mesh) return;
-
-  scene.remove(mesh);
-
-  mesh.traverse(child => {
-    if (child.geometry) child.geometry.dispose();
-    if (child.material) child.material.dispose();
-  });
-
-  mesh = null;
-}
-
-function showShape(name, objectName) {
-  if (name === currentShape) return;
-
-  currentShape = name;
-  removeShape();
-
-  if (!name) {
-    badge.textContent = "Mencari bentuk...";
-    info.textContent =
-      "Bentuk belum dapat dipastikan. Cuba objek lain atau ubah sudut kamera.";
-    return;
-  }
-
-  const geometry = makeGeometry(name);
-  if (!geometry) return;
-
-  mesh = new THREE.Mesh(
-    geometry,
-    new THREE.MeshStandardMaterial({
-      color: 0x79c6dd,
-      roughness: 0.7,
-      transparent: true,
-      opacity: 0.92
-    })
+ if(pointers.size===1){
+  mesh.rotation.y+=(e.clientX-previous.x)*.012;
+  mesh.rotation.x+=(e.clientY-previous.y)*.012;
+ }else if(pointers.size===2){
+  const p=[...pointers.values()];
+  const distance=Math.hypot(
+   p[0].x-p[1].x,
+   p[0].y-p[1].y
   );
 
-  mesh.rotation.set(0.2, 0.4, 0);
-  scene.add(mesh);
+  if(previousPinch!==null){
+   setZoom(
+    zoom+(previousPinch-distance)*.012
+   );
+  }
 
-  mesh.add(new THREE.LineSegments(
-    new THREE.EdgesGeometry(geometry),
-    new THREE.LineBasicMaterial({ color: 0x286b8a })
-  ));
+  previousPinch=distance;
+ }
+});
 
-  badge.textContent = name.toUpperCase();
-
-  const item = DATA[name];
-  info.replaceChildren();
-
-  const title = document.createElement("h3");
-  title.textContent = name.toUpperCase();
-
-  const category = document.createElement("p");
-  category.textContent = "Kategori: " + item.category;
-
-  const note = document.createElement("p");
-  note.className = "muted";
-  note.textContent = "Cadangan berdasarkan objek: " + objectName;
-
-  const list = document.createElement("ul");
-
-  item.facts.forEach(fact => {
-    const li = document.createElement("li");
-    li.textContent = fact;
-    list.appendChild(li);
-  });
-
-  info.append(title, category, note, list);
+function endPointer(e){
+ pointers.delete(e.pointerId);
+ previousPinch=null;
 }
 
-// Hadkan animasi untuk mengurangkan beban telefon.
-let lastRender = 0;
+host.addEventListener("pointerup",endPointer);
+host.addEventListener("pointercancel",endPointer);
 
-function animate(time) {
-  requestAnimationFrame(animate);
+host.addEventListener("wheel",e=>{
+ e.preventDefault();
+ setZoom(zoom+Math.sign(e.deltaY)*.3);
+},{passive:false});
 
-  if (time - lastRender >= 33) {
-    renderer.render(scene, camera3d);
-    lastRender = time;
+// BENTUK 3D
+
+function makeGeometry(name){
+ switch(name){
+  case "kubus":
+   return new THREE.BoxGeometry(1.7,1.7,1.7);
+
+  case "kuboid":
+   return new THREE.BoxGeometry(2.1,1.3,1.4);
+
+  case "prisma segi tiga":{
+   const s=new THREE.Shape();
+   s.moveTo(-1,-.7);
+   s.lineTo(1,-.7);
+   s.lineTo(0,.95);
+   s.closePath();
+
+   const g=new THREE.ExtrudeGeometry(s,{
+    depth:1.3,bevelEnabled:false
+   });
+   g.translate(0,0,-.65);
+   return g;
   }
+
+  case "kon":
+   return new THREE.ConeGeometry(.95,1.9,48);
+
+  case "silinder":
+   return new THREE.CylinderGeometry(.9,.9,1.8,48);
+
+  case "sfera":
+   return new THREE.SphereGeometry(1,32,24);
+
+  case "piramid segi empat sama":
+   return new THREE.CylinderGeometry(
+    0,1.15,1.9,4,1
+   );
+
+  default:return null;
+ }
+}
+
+function removeShape(){
+ if(!mesh)return;
+
+ scene.remove(mesh);
+
+ mesh.traverse(child=>{
+  if(child.geometry)child.geometry.dispose();
+  if(child.material)child.material.dispose();
+ });
+
+ mesh=null;
+}
+
+function showShape(name,objectName){
+ if(name===currentShape)return;
+
+ currentShape=name;
+ removeShape();
+
+ if(!name){
+  badge.textContent="Mencari bentuk...";
+  info.textContent=
+   "Bentuk belum dapat dipastikan. "+
+   "Cuba objek lain atau ubah sudut kamera.";
+  return;
+ }
+
+ const g=makeGeometry(name);
+ if(!g)return;
+
+ mesh=new THREE.Mesh(
+  g,
+  new THREE.MeshStandardMaterial({
+   color:0x79c6dd,
+   roughness:.7,
+   transparent:true,
+   opacity:.92
+  })
+ );
+
+ mesh.rotation.set(.2,.4,0);
+ scene.add(mesh);
+
+ mesh.add(new THREE.LineSegments(
+  new THREE.EdgesGeometry(g),
+  new THREE.LineBasicMaterial({
+   color:0x286b8a
+  })
+ ));
+
+ badge.textContent=name.toUpperCase();
+
+ const item=DATA[name];
+ info.replaceChildren();
+
+ const title=document.createElement("h3");
+ title.textContent=name.toUpperCase();
+
+ const category=document.createElement("p");
+ category.textContent="Kategori: "+item.category;
+
+ const note=document.createElement("p");
+ note.className="muted";
+ note.textContent=
+  "Cadangan berdasarkan objek: "+objectName;
+
+ const list=document.createElement("ul");
+
+ item.facts.forEach(fact=>{
+  const li=document.createElement("li");
+  li.textContent=fact;
+  list.appendChild(li);
+ });
+
+ info.append(title,category,note,list);
+}
+
+// ANIMASI TERHAD UNTUK TELEFON
+
+let lastRender=0;
+
+function animate(time){
+ requestAnimationFrame(animate);
+
+ if(time-lastRender>=33){
+  renderer.render(scene,camera3d);
+  lastRender=time;
+ }
 }
 
 requestAnimationFrame(animate);
 
-function stopCamera() {
-  running = false;
-  session++;
+// TUTUP KAMERA
 
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
+function stopCamera(){
+ running=false;
+ session++;
 
-  video.srcObject = null;
-  ctx.clearRect(0, 0, overlay.width, overlay.height);
+ if(stream){
+  stream.getTracks().forEach(t=>t.stop());
+  stream=null;
+ }
 
-  currentShape = null;
-  removeShape();
+ video.srcObject=null;
 
-  badge.textContent = "Sedia untuk mengimbas";
-  detectedEl.textContent = "Objek dikesan: —";
-  statusEl.textContent = "Kamera ditutup.";
-  startBtn.disabled = false;
+ ctx.clearRect(
+  0,0,overlay.width,overlay.height
+ );
+
+ currentShape=null;
+ removeShape();
+
+ badge.textContent="Sedia untuk mengimbas";
+ detectedEl.textContent="Objek dikesan: —";
+ statusEl.textContent="Kamera ditutup.";
+ startBtn.disabled=false;
+ lastSeen=0;
 }
 
-async function startCamera() {
+// BUKA KAMERA
+
+async function startCamera(){
+ stopCamera();
+
+ const id=++session;
+ startBtn.disabled=true;
+ statusEl.textContent="Membuka kamera...";
+
+ try{
+  if(!navigator.mediaDevices?.getUserMedia){
+   throw new Error(
+    "Pelayar tidak menyokong kamera."
+   );
+  }
+
+  const newStream=
+   await navigator.mediaDevices.getUserMedia({
+    audio:false,
+    video:{
+     facingMode:{ideal:"environment"},
+     width:{ideal:640},
+     height:{ideal:480},
+     frameRate:{ideal:24,max:30}
+    }
+   });
+
+  if(id!==session){
+   newStream.getTracks().forEach(
+    t=>t.stop()
+   );
+   return;
+  }
+
+  stream=newStream;
+  video.srcObject=stream;
+  await video.play();
+
+  statusEl.textContent=
+   "Memuatkan pengecaman objek...";
+
+  if(!window.cocoSsd){
+   throw new Error(
+    "Sistem pengecaman gagal dimuatkan."
+   );
+  }
+
+  if(!aiModel){
+   aiModel=await cocoSsd.load();
+  }
+
+  if(id!==session)return;
+
+  running=true;
+  statusEl.textContent=
+   "Kamera aktif. Halakan kepada objek.";
+
+  detect(id);
+
+ }catch(error){
   stopCamera();
-
-  const id = ++session;
-  startBtn.disabled = true;
-  statusEl.textContent = "Membuka kamera...";
-
-  try {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      throw new Error("Pelayar tidak menyokong kamera.");
-    }
-
-    const newStream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 640 },
-        height: { ideal: 480 },
-        frameRate: { ideal: 24, max: 30 }
-      }
-    });
-
-    if (id !== session) {
-      newStream.getTracks().forEach(track => track.stop());
-      return;
-    }
-
-    stream = newStream;
-    video.srcObject = stream;
-    await video.play();
-
-    statusEl.textContent = "Memuatkan pengecaman objek...";
-
-    if (!window.cocoSsd) {
-      throw new Error("Sistem pengecaman gagal dimuatkan.");
-    }
-
-    if (!aiModel) {
-      aiModel = await cocoSsd.load();
-    }
-
-    if (id !== session) return;
-
-    running = true;
-    statusEl.textContent = "Kamera aktif. Halakan kepada objek.";
-
-    detect(id);
-
-  } catch (error) {
-    stopCamera();
-    statusEl.textContent = "Ralat: " + error.message;
-  }
+  statusEl.textContent=
+   "Ralat: "+error.message;
+ }
 }
 
-async function detect(id) {
-  if (!running || id !== session) return;
+// PENGESANAN OBJEK
 
-  try {
-    if (video.readyState >= 2) {
-      const predictions = await aiModel.detect(video);
+async function detect(id){
+ if(!running||id!==session)return;
 
-      if (!running || id !== session) return;
+ try{
+  if(video.readyState>=2){
+   const predictions=
+    await aiModel.detect(video);
 
-      overlay.width = video.videoWidth;
-      overlay.height = video.videoHeight;
+   if(!running||id!==session)return;
 
-      ctx.clearRect(0, 0, overlay.width, overlay.height);
+   overlay.width=video.videoWidth;
+   overlay.height=video.videoHeight;
 
-      const found = predictions
-        .filter(p => p.score >= 0.55)
-        .sort((a, b) => b.score - a.score);
+   ctx.clearRect(
+    0,0,overlay.width,overlay.height
+   );
 
-      found.forEach(p => {
-        const [x, y, w, h] = p.bbox;
+   const found=predictions
+    .filter(p=>p.score>=.55)
+    .sort((a,b)=>b.score-a.score);
 
-        ctx.strokeStyle = "#aee9fb";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(x, y, w, h);
+   found.forEach(p=>{
+    const [x,y,w,h]=p.bbox;
 
-        const label =
-          p.class + " " + Math.round(p.score * 100) + "%";
+    ctx.strokeStyle="#aee9fb";
+    ctx.lineWidth=3;
+    ctx.strokeRect(x,y,w,h);
 
-        ctx.font = "17px Arial";
+    const label=
+     p.class+" "+
+     Math.round(p.score*100)+"%";
 
-        const labelWidth = Math.min(
-          ctx.measureText(label).width + 14,
-          overlay.width - x
-        );
+    ctx.font="17px Arial";
 
-        ctx.fillStyle = "#173b4d";
-        ctx.fillRect(x, Math.max(0, y - 27), labelWidth, 27);
+    const labelWidth=Math.min(
+     ctx.measureText(label).width+14,
+     overlay.width-x
+    );
 
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText(label, x + 6, Math.max(19, y - 7));
-      });
+    ctx.fillStyle="#173b4d";
+    ctx.fillRect(
+     x,Math.max(0,y-27),
+     labelWidth,27
+    );
 
-      const matched = found.find(p => mapping[p.class]);
+    ctx.fillStyle="#ffffff";
+    ctx.fillText(
+     label,x+6,Math.max(19,y-7)
+    );
+   });
 
-      if (matched) {
-        lastSeen = Date.now();
+   const matched=found.find(
+    p=>mapping[p.class]
+   );
 
-        detectedEl.textContent =
-          "Objek dikesan: " + matched.class +
-          " (" + Math.round(matched.score * 100) + "%)";
+   if(matched){
+    lastSeen=Date.now();
 
-        showShape(mapping[matched.class], matched.class);
+    detectedEl.textContent=
+     "Objek dikesan: "+
+     matched.class+
+     " ("+
+     Math.round(matched.score*100)+
+     "%)";
 
-      } else if (Date.now() - lastSeen > 1800) {
-        detectedEl.textContent = "Objek dikesan: —";
-        showShape(null);
-      }
-    }
+    showShape(
+     mapping[matched.class],
+     matched.class
+    );
 
-  } catch (error) {
-    statusEl.textContent = "Ralat pengecaman: " + error.message;
+   }else if(Date.now()-lastSeen>2200){
+    detectedEl.textContent="Objek dikesan: —";
+    showShape(null);
+   }
   }
 
-  if (running && id === session) {
-    setTimeout(() => detect(id), 700);
-  }
+ }catch(error){
+  statusEl.textContent=
+   "Ralat pengecaman: "+error.message;
+ }
+
+ if(running&&id===session){
+  setTimeout(()=>detect(id),700);
+ }
 }
+
+// BUTANG
 
 document.getElementById("start")
-  .addEventListener("click", startCamera);
+ .addEventListener("click",startCamera);
 
 document.getElementById("stop")
-  .addEventListener("click", stopCamera);
+ .addEventListener("click",stopCamera);
 
-window.addEventListener("pagehide", stopCamera);
+window.addEventListener("pagehide",stopCamera);
+
 </script>
 </body>
 </html>
