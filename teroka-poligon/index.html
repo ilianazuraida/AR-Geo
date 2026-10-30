@@ -2,334 +2,270 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>AR-Geo | Teroka Poligon</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AR-Geo | Teroka Poligon V2</title>
 
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
 
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f0df;
-      overflow: hidden;
-    }
-
-    .top {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      z-index: 20;
-      background: rgba(255, 250, 231, .94);
-      border: 3px solid #276b53;
-      border-radius: 18px;
-      padding: 10px;
-      text-align: center;
-    }
-
-    h2 {
-      margin: 0;
-      color: #155b46;
-      font-size: 20px;
-    }
-
-    #status {
-      margin-top: 5px;
-      font-size: 12px;
-      color: #555;
-    }
-
-    .panel {
-      position: fixed;
-      bottom: 12px;
-      left: 10px;
-      right: 10px;
-      z-index: 20;
-      background: rgba(255, 250, 231, .96);
-      border: 3px solid #276b53;
-      border-radius: 20px;
-      padding: 12px;
-      text-align: center;
-    }
-
-    .choices {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 5px;
-    }
-
-    button {
-      border: 0;
-      border-radius: 10px;
-      padding: 11px 5px;
-      font-weight: bold;
-      cursor: pointer;
-      color: #173e35;
-      background: #dcebdc;
-      font-size: 11px;
-    }
-
-    button.active {
-      outline: 3px solid #235d4b;
-    }
-
-    .controls {
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-
-    .controls button {
-      background: #f5dba7;
-      padding: 10px 14px;
-      font-size: 13px;
-    }
-
-    #info {
-      margin-top: 10px;
-      font-size: 14px;
-      font-weight: bold;
-      color: #235d4b;
-    }
-
-    #startScreen {
-      position: fixed;
-      inset: 0;
-      background: #f5f0df;
-      z-index: 100;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 25px;
-      text-align: center;
-    }
-
-    .startCard {
-      background: white;
-      padding: 25px;
-      border-radius: 25px;
-      border: 4px solid #276b53;
-      max-width: 380px;
-      width: 100%;
-    }
-
-    .startCard h1 {
-      color: #17664c;
-    }
-
-    .startCard button {
-      background: #287d5c;
-      color: white;
-      font-size: 17px;
-      padding: 15px 25px;
-      width: 100%;
-    }
-
-    .back {
-      display: inline-block;
-      margin-top: 15px;
-      color: #17664c;
-      font-size: 13px;
-    }
-
-    .a-enter-vr-button {
-      display: none !important;
-    }
-  </style>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f6f0df;overflow:hidden}
+button{border:0;border-radius:12px;padding:10px 7px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid #183e32;outline-offset:2px}
+.top{
+ position:fixed;top:8px;left:8px;right:8px;z-index:20;
+ background:rgba(255,250,234,.95);border:2px solid #32755b;
+ border-radius:16px;padding:9px;text-align:center;pointer-events:none
+}
+h2{font-size:18px;margin:0;color:#155b46}
+#status{font-size:12px;margin-top:4px;color:#48564d}
+.panel{
+ position:fixed;bottom:8px;left:8px;right:8px;z-index:20;
+ background:rgba(255,250,234,.96);border:2px solid #32755b;
+ border-radius:17px;padding:10px;text-align:center;
+ max-height:47dvh;overflow-y:auto
+}
+.choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.choices button{font-size:11px;color:#153d32;min-width:0}
+#btn5{background:#f3a3b6}
+#btn6{background:#62b9eb}
+#btn7{background:#9bc77b}
+#btn8{background:#ffa13c}
+button.active{outline:3px solid #184d3d;outline-offset:-3px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:9px}
+.controls button{background:#f1dba9;font-size:12px}
+.features button{background:#d6e9db}
+#info{margin-top:8px;font-weight:bold;color:#205c48;font-size:14px}
+#hint{font-size:11px;color:#56655a;margin-top:5px}
+#startScreen{
+ position:fixed;inset:0;z-index:100;background:#f5f0df;
+ display:flex;align-items:center;justify-content:center;
+ padding:22px;text-align:center
+}
+.startCard{
+ width:100%;max-width:390px;background:white;padding:24px;
+ border:3px solid #32755b;border-radius:24px
+}
+.startCard h1{color:#17664c;font-size:24px}
+.startCard p{line-height:1.5}
+.startCard button{background:#287d5c;color:white;font-size:17px;padding:15px;width:100%}
+.back{display:inline-block;margin-top:15px;color:#17664c;font-size:13px}
+.a-enter-vr-button{display:none!important}
+</style>
 </head>
 
 <body>
 
-  <div id="startScreen">
-    <div class="startCard">
-      <h1>🌿 Teroka Poligon dengan AR</h1>
-      <p>
-        Imbas marker AR dan terokai
-        empat poligon sekata!
-      </p>
-      <p>
-        Pentagon • Heksagon • Heptagon • Oktagon
-      </p>
-      <button onclick="startAR()">📷 Buka Kamera</button>
-      <br>
-      <a class="back" href="../">Kembali ke AR-Geo</a>
-    </div>
-  </div>
+<div id="startScreen">
+ <div class="startCard">
+  <h1>🌿 Teroka Poligon dengan AR</h1>
+  <p>Imbas satu marker Hiro untuk meneroka empat poligon sekata.</p>
+  <p>Pentagon • Heksagon • Heptagon • Oktagon</p>
+  <button onclick="startAR()">📷 Buka Kamera</button>
+  <a class="back" href="../">Kembali ke AR-Geo</a>
+ </div>
+</div>
 
-  <div class="top">
-    <h2>🌿 Teroka Poligon dengan AR</h2>
-    <div id="status">Sila imbas marker Hiro</div>
-  </div>
+<div class="top">
+ <h2>🌿 Teroka Poligon dengan AR</h2>
+ <div id="status" role="status">Halakan kamera ke marker Hiro</div>
+</div>
 
-  <div class="panel">
-    <div class="choices">
-      <button id="btn5" class="active" onclick="choose(5)">
-        Pentagon
-      </button>
-      <button id="btn6" onclick="choose(6)">
-        Heksagon
-      </button>
-      <button id="btn7" onclick="choose(7)">
-        Heptagon
-      </button>
-      <button id="btn8" onclick="choose(8)">
-        Oktagon
-      </button>
-    </div>
+<div class="panel">
+ <div class="choices">
+  <button id="btn5" onclick="choose(5)">Pentagon</button>
+  <button id="btn6" onclick="choose(6)">Heksagon</button>
+  <button id="btn7" onclick="choose(7)">Heptagon</button>
+  <button id="btn8" onclick="choose(8)">Oktagon</button>
+ </div>
 
-    <div class="controls">
-      <button onclick="rotateShape(-20)">↶ Putar</button>
-      <button onclick="rotateShape(20)">Putar ↷</button>
-      <button onclick="zoomShape(1.2)">＋ Zum</button>
-      <button onclick="zoomShape(0.8)">－ Zum</button>
-      <button onclick="resetShape()">↺ Set Semula</button>
-    </div>
+ <div class="controls features">
+  <button onclick="showFeature('sides')">Tunjuk Sisi</button>
+  <button onclick="showFeature('vertices')">Tunjuk Bucu</button>
+  <button onclick="showFeature('both')">Tunjuk Semua</button>
+  <button onclick="showFeature('none')">Sembunyikan Label</button>
+ </div>
 
-    <div id="info">
-      Pentagon: 5 sisi dan 5 bucu
-    </div>
-  </div>
+ <div class="controls">
+  <button onclick="rotateShape(-20)">↶ Putar</button>
+  <button onclick="rotateShape(20)">Putar ↷</button>
+  <button onclick="zoomShape(1.2)">＋ Zum</button>
+  <button onclick="zoomShape(1/1.2)">－ Zum</button>
+  <button onclick="resetShape()">↺ Set Semula</button>
+ </div>
 
-  <a-scene
-    embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
-    vr-mode-ui="enabled: false"
-    renderer="antialias: true; alpha: true"
-  >
-    <a-marker
-      id="hiroMarker"
-      preset="hiro"
-      emitevents="true"
-    >
-      <a-entity
-        id="shapeRoot"
-        position="0 0.05 0"
-        rotation="-90 0 0"
-      >
-        <a-entity
-          id="polygon"
-          geometry="primitive: circle; radius: 0.55; segments: 5"
-          material="color: #F3A3B6; side: double; shader: flat"
-        ></a-entity>
-      </a-entity>
-    </a-marker>
+ <div id="info">Pentagon: 5 sisi dan 5 bucu</div>
+ <div id="hint">Pilih poligon, kemudian teroka sisi dan bucunya.</div>
+</div>
 
-    <a-entity camera></a-entity>
-  </a-scene>
+<a-scene
+ embedded
+ arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
+ vr-mode-ui="enabled: false"
+ renderer="antialias: true; alpha: true"
+>
+ <a-marker id="hiroMarker" preset="hiro" emitevents="true">
+  <a-entity id="shapeRoot" position="0 0.05 0" rotation="-90 0 0">
+   <a-entity id="polygon"
+    geometry="primitive: circle; radius: 0.55; segments: 5"
+    material="color: #F3A3B6; side: double; shader: flat">
+   </a-entity>
+   <a-entity id="highlights"></a-entity>
+  </a-entity>
+ </a-marker>
+ <a-entity camera></a-entity>
+</a-scene>
 
-  <script>
-    let selected = 5;
-    let angle = 0;
-    let scale = 1;
+<script>
+let selected=5;
+let angle=0;
+let zoom=1;
+let feature="none";
 
-    const polygons = {
-      5: {
-        name: "Pentagon",
-        color: "#F3A3B6"
-      },
-      6: {
-        name: "Heksagon",
-        color: "#62B9EB"
-      },
-      7: {
-        name: "Heptagon",
-        color: "#9BC77B"
-      },
-      8: {
-        name: "Oktagon",
-        color: "#FFA13C"
-      }
-    };
+const data={
+ 5:{name:"Pentagon",color:"#F3A3B6"},
+ 6:{name:"Heksagon",color:"#62B9EB"},
+ 7:{name:"Heptagon",color:"#9BC77B"},
+ 8:{name:"Oktagon",color:"#FFA13C"}
+};
 
-    const marker = document.getElementById("hiroMarker");
-    const polygon = document.getElementById("polygon");
-    const root = document.getElementById("shapeRoot");
-    const statusText = document.getElementById("status");
+const marker=document.getElementById("hiroMarker");
+const polygon=document.getElementById("polygon");
+const root=document.getElementById("shapeRoot");
+const highlights=document.getElementById("highlights");
+const statusText=document.getElementById("status");
+const info=document.getElementById("info");
+const hint=document.getElementById("hint");
 
-    function startAR() {
-      document.getElementById("startScreen").style.display = "none";
-      statusText.textContent = "Halakan kamera ke marker Hiro";
-    }
+function startAR(){
+ document.getElementById("startScreen").style.display="none";
+ statusText.textContent="Halakan kamera ke marker Hiro";
+}
 
-    function choose(n) {
-      selected = n;
-      angle = 0;
-      scale = 1;
+function choose(n){
+ selected=n;
+ angle=0;
+ zoom=1;
+ feature="none";
 
-      const item = polygons[n];
+ polygon.setAttribute("geometry",{
+  primitive:"circle",radius:0.55,segments:n
+ });
+ polygon.setAttribute("material",{
+  color:data[n].color,side:"double",shader:"flat"
+ });
 
-      polygon.setAttribute("geometry", {
-        primitive: "circle",
-        radius: 0.55,
-        segments: n
-      });
+ document.querySelectorAll(".choices button").forEach(b=>{
+  b.classList.remove("active");
+ });
+ document.getElementById("btn"+n).classList.add("active");
 
-      polygon.setAttribute("material", {
-        color: item.color,
-        side: "double",
-        shader: "flat"
-      });
+ info.textContent=data[n].name+": "+n+" sisi dan "+n+" bucu";
+ hint.textContent="Tekan Tunjuk Sisi atau Tunjuk Bucu.";
+ updateTransform();
+ drawHighlights();
+}
 
-      document.getElementById("info").textContent =
-        item.name + ": " + n + " sisi dan " + n + " bucu";
+function point(i,n){
+ const a=2*Math.PI*i/n;
+ return {
+  x:0.55*Math.cos(a),
+  y:0.55*Math.sin(a),
+  z:0.012
+ };
+}
 
-      document.querySelectorAll(".choices button")
-        .forEach(btn => btn.classList.remove("active"));
+function addLine(a,b){
+ const length=Math.hypot(b.x-a.x,b.y-a.y);
+ const midX=(a.x+b.x)/2;
+ const midY=(a.y+b.y)/2;
+ const direction=Math.atan2(b.y-a.y,b.x-a.x);
 
-      document.getElementById("btn" + n)
-        .classList.add("active");
+ const line=document.createElement("a-box");
+ line.setAttribute("position",`${midX} ${midY} 0.018`);
+ line.setAttribute("width",length);
+ line.setAttribute("height",0.022);
+ line.setAttribute("depth",0.012);
+ line.setAttribute("rotation",`0 0 ${direction*180/Math.PI}`);
+ line.setAttribute("material","color: #183e36; shader: flat");
+ highlights.appendChild(line);
+}
 
-      updateTransform();
-    }
+function addDot(p){
+ const dot=document.createElement("a-sphere");
+ dot.setAttribute("position",`${p.x} ${p.y} 0.028`);
+ dot.setAttribute("radius","0.035");
+ dot.setAttribute("material","color: #ffffff; shader: flat");
+ highlights.appendChild(dot);
+}
 
-    function rotateShape(degrees) {
-      angle += degrees;
-      updateTransform();
-    }
+function drawHighlights(){
+ highlights.replaceChildren();
 
-    function zoomShape(factor) {
-      scale *= factor;
-      scale = Math.max(0.4, Math.min(scale, 2.5));
-      updateTransform();
-    }
+ if(feature==="none")return;
 
-    function resetShape() {
-      angle = 0;
-      scale = 1;
-      updateTransform();
-    }
+ const showSides=feature==="sides"||feature==="both";
+ const showVertices=feature==="vertices"||feature==="both";
 
-    function updateTransform() {
-      root.setAttribute("rotation", {
-        x: -90,
-        y: 0,
-        z: angle
-      });
+ for(let i=0;i<selected;i++){
+  const a=point(i,selected);
+  const b=point((i+1)%selected,selected);
 
-      root.setAttribute("scale", {
-        x: scale,
-        y: scale,
-        z: scale
-      });
-    }
+  if(showSides)addLine(a,b);
+  if(showVertices)addDot(a);
+ }
+}
 
-    marker.addEventListener("markerFound", () => {
-      statusText.textContent = "✓ Marker dikesan! Teroka poligon.";
-    });
+function showFeature(type){
+ feature=type;
+ drawHighlights();
 
-    marker.addEventListener("markerLost", () => {
-      statusText.textContent = "Marker tidak dikesan. Imbas semula.";
-    });
+ if(type==="sides"){
+  hint.textContent="Perhatikan garisan gelap. Kira setiap sisi poligon.";
+ }else if(type==="vertices"){
+  hint.textContent="Perhatikan titik putih pada setiap bucu.";
+ }else if(type==="both"){
+  hint.textContent="Garisan gelap ialah sisi dan titik putih ialah bucu.";
+ }else{
+  hint.textContent="Label disembunyikan. Teroka bentuk poligon.";
+ }
+}
 
-    choose(5);
-  </script>
+function rotateShape(deg){
+ angle+=deg;
+ updateTransform();
+}
 
+function zoomShape(factor){
+ zoom=Math.max(0.4,Math.min(2.5,zoom*factor));
+ updateTransform();
+}
+
+function resetShape(){
+ angle=0;
+ zoom=1;
+ feature="none";
+ drawHighlights();
+ updateTransform();
+ hint.textContent="Paparan telah ditetapkan semula.";
+}
+
+function updateTransform(){
+ root.setAttribute("rotation",{x:-90,y:0,z:angle});
+ root.setAttribute("scale",{x:zoom,y:zoom,z:zoom});
+}
+
+marker.addEventListener("markerFound",()=>{
+ statusText.textContent="✓ Marker dikesan! Teroka poligon.";
+});
+
+marker.addEventListener("markerLost",()=>{
+ statusText.textContent="Marker tidak dikesan. Imbas semula.";
+});
+
+choose(5);
+</script>
 </body>
 </html>
