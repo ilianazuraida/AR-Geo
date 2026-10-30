@@ -3,7 +3,9 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
 <title>AR-Geo | Teroka Bentuk 3D</title>
 
 <style>
@@ -13,7 +15,7 @@
 
 body {
   margin: 0;
-  background: #f0f7f8;
+  background: #eff6f8;
   color: #25475b;
   font-family: Arial, sans-serif;
 }
@@ -44,13 +46,16 @@ main {
   overflow: hidden;
   border-radius: 18px;
   background: #18303d;
+  height: min(65vh, 560px);
+  min-height: 330px;
+  touch-action: none;
 }
 
-video {
+#camera {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: min(56vh, 480px);
-  min-height: 260px;
-  display: block;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -62,28 +67,59 @@ video {
   pointer-events: none;
 }
 
-.hint {
+#ar3d {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
-  padding: 9px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  touch-action: none;
+}
+
+#ar3d canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cameraHint {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 5;
+  padding: 10px;
   text-align: center;
   color: white;
-  background: #18303ddc;
-  border-radius: 10px;
+  background: #18303dd9;
+  border-radius: 12px;
   font-size: 13px;
+  pointer-events: none;
+}
+
+.cameraBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  background: #ffffffdf;
+  color: #28566d;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 13px;
+  pointer-events: none;
 }
 
 .buttons {
   display: flex;
   gap: 10px;
-  margin: 13px 0;
+  margin: 14px 0;
 }
 
 button {
   flex: 1;
-  padding: 13px;
+  padding: 14px;
   border: 0;
   border-radius: 12px;
   background: #397d9b;
@@ -103,10 +139,10 @@ button:disabled {
 
 .panel {
   background: white;
-  border-radius: 17px;
-  padding: 17px;
+  border-radius: 18px;
+  padding: 18px;
   margin: 12px 0;
-  box-shadow: 0 2px 12px #23445712;
+  box-shadow: 0 2px 12px #24445912;
 }
 
 .panel h2 {
@@ -117,31 +153,10 @@ button:disabled {
   color: #617c89;
 }
 
-#model3d {
-  height: 310px;
-  border-radius: 14px;
-  background: linear-gradient(#f2f9fc, #dfeef5);
-  touch-action: none;
-  overflow: hidden;
-}
-
-#model3d canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.modelhelp {
-  text-align: center;
-  font-size: 13px;
-  color: #617c89;
-  margin: 8px 0;
-}
-
 .shapeName {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: bold;
-  margin: 10px 0 4px;
+  margin: 5px 0 8px;
 }
 
 ul {
@@ -167,15 +182,28 @@ footer {
 
 <main>
 
-  <div class="viewer">
-    <video id="camera" autoplay muted playsinline></video>
+  <section class="viewer" id="viewer">
+
+    <video id="camera"
+      autoplay
+      muted
+      playsinline>
+    </video>
+
     <canvas id="overlay"></canvas>
 
-    <div class="hint">
-      Halakan kamera kepada objek.
-      Model 3D akan muncul apabila padanan bentuk ditemui.
+    <div id="ar3d"></div>
+
+    <div class="cameraBadge" id="shapeBadge">
+      Sedia untuk mengimbas
     </div>
-  </div>
+
+    <div class="cameraHint">
+      Halakan kamera kepada objek.
+      Seret model untuk putar • Cubit untuk zum.
+    </div>
+
+  </section>
 
   <div class="buttons">
     <button id="start">Buka Kamera</button>
@@ -185,22 +213,18 @@ footer {
   <section class="panel">
     <h2>Status</h2>
     <p id="status">Kamera belum dibuka.</p>
-    <p id="detected" class="muted">Objek dikesan: —</p>
+    <p id="detected" class="muted">
+      Objek dikesan: —
+    </p>
   </section>
 
   <section class="panel">
-    <h2>Model Bentuk 3D</h2>
-
-    <div id="model3d"></div>
-
-    <p class="modelhelp">
-      Seret untuk putar • Cubit dua jari atau skrol untuk zum
-    </p>
+    <h2>Maklumat Bentuk Geometri</h2>
 
     <div id="shapeInfo">
       <p class="muted">
         Buka kamera dan halakan kepada objek
-        untuk melihat bentuk.
+        untuk melihat bentuk geometri 3D.
       </p>
     </div>
   </section>
@@ -208,9 +232,10 @@ footer {
   <section class="panel">
     <h2>Perhatian</h2>
     <p class="muted">
-      Versi ini mengenal pasti jenis objek,
-      kemudian mencadangkan bentuk geometri.
-      Bentuk sebenar sesuatu objek mungkin berbeza.
+      Sistem ini mengenal pasti jenis objek
+      dan mencadangkan bentuk geometri.
+      Sahkan bentuk sebenar objek sebelum
+      membuat kesimpulan.
     </p>
   </section>
 
@@ -220,27 +245,32 @@ footer {
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 
-<script>
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js";
+
+// ELEMEN
+
 const video = document.getElementById("camera");
 const overlay = document.getElementById("overlay");
 const ctx = overlay.getContext("2d");
 
+const viewer = document.getElementById("viewer");
+const host = document.getElementById("ar3d");
+
 const statusEl = document.getElementById("status");
 const detectedEl = document.getElementById("detected");
 const infoEl = document.getElementById("shapeInfo");
+const badgeEl = document.getElementById("shapeBadge");
+
 const startBtn = document.getElementById("start");
 
-let stream = null;
-let model = null;
-let running = false;
-let session = 0;
-let currentShape = null;
-
-// MAKLUMAT TUJUH BENTUK GEOMETRI
+// DATA BENTUK
 
 const shapes = {
+
   kubus: {
     category: "Prisma",
     facts: [
@@ -306,10 +336,10 @@ const shapes = {
       "8 tepi"
     ]
   }
+
 };
 
-// PADANAN SEMENTARA OBJEK KEPADA BENTUK
-// Ini belum pengecaman geometri sebenar.
+// PADANAN SEMENTARA OBJEK
 
 const mapping = {
   "sports ball": "sfera",
@@ -322,181 +352,170 @@ const mapping = {
   "tv": "kuboid"
 };
 
-// SISTEM PAPARAN 3D
+// KEADAAN KAMERA
 
-let renderer;
-let scene;
-let camera3d;
-let mesh;
+let stream = null;
+let aiModel = null;
+let running = false;
+let session = 0;
+let currentShape = null;
 
-let zoom = 4.5;
-let dragging = false;
-let lastX = 0;
-let lastY = 0;
-let pinchDist = 0;
+// THREE.JS
 
-function init3D() {
+const scene = new THREE.Scene();
 
-  if (!window.THREE) {
-    statusEl.textContent =
-      "Paparan 3D gagal dimuatkan. Semak internet.";
-    return;
-  }
+const camera3d = new THREE.PerspectiveCamera(
+  40, 1, 0.1, 100
+);
 
-  const host = document.getElementById("model3d");
+let zoom = 4.2;
 
-  scene = new THREE.Scene();
+camera3d.position.set(0, 0.8, zoom);
+camera3d.lookAt(0, 0, 0);
 
-  camera3d = new THREE.PerspectiveCamera(
-    40, 1, 0.1, 100
-  );
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true
+});
 
-  camera3d.position.set(0, 1.1, zoom);
-  camera3d.lookAt(0, 0, 0);
+renderer.setPixelRatio(
+  Math.min(window.devicePixelRatio || 1, 2)
+);
 
-  renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: true
-  });
+renderer.setClearColor(0x000000, 0);
 
-  renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio || 1, 2)
-  );
+host.appendChild(renderer.domElement);
 
-  host.appendChild(renderer.domElement);
-
-  scene.add(
-    new THREE.HemisphereLight(
-      0xffffff,
-      0x91b0c3,
-      2
-    )
-  );
-
-  const light = new THREE.DirectionalLight(
+scene.add(
+  new THREE.HemisphereLight(
     0xffffff,
-    2
-  );
+    0x91b0c3,
+    2.2
+  )
+);
 
-  light.position.set(3, 5, 6);
-  scene.add(light);
+const light = new THREE.DirectionalLight(
+  0xffffff,
+  2.2
+);
 
-  function resize() {
-    const w = host.clientWidth;
-    const h = host.clientHeight;
+light.position.set(3, 5, 6);
+scene.add(light);
 
-    camera3d.aspect = w / h;
-    camera3d.updateProjectionMatrix();
+let mesh = null;
 
-    renderer.setSize(w, h, false);
-  }
+// SAIZ PAPARAN
 
-  resize();
+function resize3D() {
 
-  window.addEventListener("resize", resize);
+  const w = host.clientWidth;
+  const h = host.clientHeight;
 
-  if (window.ResizeObserver) {
-    new ResizeObserver(resize).observe(host);
-  }
+  if (!w || !h) return;
 
-  const el = renderer.domElement;
+  camera3d.aspect = w / h;
+  camera3d.updateProjectionMatrix();
 
-  // PUTAR MODEL
-
-  el.addEventListener("pointerdown", function(e) {
-    dragging = true;
-    lastX = e.clientX;
-    lastY = e.clientY;
-
-    el.setPointerCapture(e.pointerId);
-  });
-
-  el.addEventListener("pointermove", function(e) {
-
-    if (!dragging || !mesh) return;
-
-    mesh.rotation.y +=
-      (e.clientX - lastX) * 0.012;
-
-    mesh.rotation.x +=
-      (e.clientY - lastY) * 0.012;
-
-    lastX = e.clientX;
-    lastY = e.clientY;
-  });
-
-  el.addEventListener("pointerup", function() {
-    dragging = false;
-  });
-
-  el.addEventListener("pointercancel", function() {
-    dragging = false;
-  });
-
-  // ZUM MENGGUNAKAN MOUSE
-
-  el.addEventListener("wheel", function(e) {
-    e.preventDefault();
-
-    setZoom(
-      zoom + Math.sign(e.deltaY) * 0.3
-    );
-  }, { passive: false });
-
-  // ZUM MENGGUNAKAN DUA JARI
-
-  el.addEventListener("touchstart", function(e) {
-
-    if (e.touches.length === 2) {
-
-      pinchDist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-    }
-  }, { passive: true });
-
-  el.addEventListener("touchmove", function(e) {
-
-    if (e.touches.length === 2) {
-
-      const d = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-
-      if (pinchDist) {
-        setZoom(
-          zoom + (pinchDist - d) * 0.012
-        );
-      }
-
-      pinchDist = d;
-    }
-  }, { passive: true });
-
-  function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera3d);
-  }
-
-  animate();
+  renderer.setSize(w, h, false);
 }
 
-function setZoom(z) {
+resize3D();
 
-  zoom = Math.max(2.4, Math.min(9, z));
+window.addEventListener("resize", resize3D);
+
+if (window.ResizeObserver) {
+  new ResizeObserver(resize3D).observe(host);
+}
+
+// ZUM
+
+function setZoom(value) {
+
+  zoom = Math.max(
+    2.3,
+    Math.min(9, value)
+  );
 
   camera3d.position.set(
     0,
-    zoom * 0.24,
+    zoom * 0.19,
     zoom
   );
 
   camera3d.lookAt(0, 0, 0);
 }
 
-// CIPTA MODEL GEOMETRI
+// PUTAR DAN ZUM DENGAN JARI
+
+const activePointers = new Map();
+
+let previousPinch = null;
+
+host.addEventListener("pointerdown", e => {
+
+  activePointers.set(e.pointerId, {
+    x: e.clientX,
+    y: e.clientY
+  });
+
+  host.setPointerCapture(e.pointerId);
+});
+
+host.addEventListener("pointermove", e => {
+
+  if (!activePointers.has(e.pointerId)) return;
+
+  const previous = activePointers.get(e.pointerId);
+
+  activePointers.set(e.pointerId, {
+    x: e.clientX,
+    y: e.clientY
+  });
+
+  if (!mesh) return;
+
+  if (activePointers.size === 1) {
+
+    mesh.rotation.y +=
+      (e.clientX - previous.x) * 0.012;
+
+    mesh.rotation.x +=
+      (e.clientY - previous.y) * 0.012;
+
+  } else if (activePointers.size === 2) {
+
+    const points = [...activePointers.values()];
+
+    const distance = Math.hypot(
+      points[0].x - points[1].x,
+      points[0].y - points[1].y
+    );
+
+    if (previousPinch !== null) {
+
+      setZoom(
+        zoom + (previousPinch - distance) * 0.012
+      );
+    }
+
+    previousPinch = distance;
+  }
+});
+
+function endPointer(e) {
+  activePointers.delete(e.pointerId);
+  previousPinch = null;
+}
+
+host.addEventListener("pointerup", endPointer);
+host.addEventListener("pointercancel", endPointer);
+
+host.addEventListener("wheel", e => {
+  e.preventDefault();
+  setZoom(zoom + Math.sign(e.deltaY) * 0.3);
+}, { passive: false });
+
+// BINA BENTUK 3D
 
 function makeGeometry(name) {
 
@@ -504,20 +523,20 @@ function makeGeometry(name) {
 
     case "kubus":
       return new THREE.BoxGeometry(
-        1.8, 1.8, 1.8
+        1.7, 1.7, 1.7
       );
 
     case "kuboid":
       return new THREE.BoxGeometry(
-        2.2, 1.35, 1.4
+        2.1, 1.3, 1.4
       );
 
     case "prisma segi tiga": {
 
       const s = new THREE.Shape();
 
-      s.moveTo(-1, -0.75);
-      s.lineTo(1, -0.75);
+      s.moveTo(-1, -0.7);
+      s.lineTo(1, -0.7);
       s.lineTo(0, 0.95);
       s.closePath();
 
@@ -536,12 +555,12 @@ function makeGeometry(name) {
 
     case "kon":
       return new THREE.ConeGeometry(
-        0.95, 2, 64
+        0.95, 1.9, 64
       );
 
     case "silinder":
       return new THREE.CylinderGeometry(
-        0.9, 0.9, 1.9, 64
+        0.9, 0.9, 1.8, 64
       );
 
     case "sfera":
@@ -551,7 +570,7 @@ function makeGeometry(name) {
 
     case "piramid segi empat sama":
       return new THREE.CylinderGeometry(
-        0, 1.15, 2, 4, 1
+        0, 1.15, 1.9, 4, 1
       );
 
     default:
@@ -559,7 +578,29 @@ function makeGeometry(name) {
   }
 }
 
-// PAPARKAN MODEL DAN MAKLUMAT
+// PADAM MODEL LAMA
+
+function removeMesh() {
+
+  if (!mesh) return;
+
+  scene.remove(mesh);
+
+  mesh.traverse(child => {
+
+    if (child.geometry) {
+      child.geometry.dispose();
+    }
+
+    if (child.material) {
+      child.material.dispose();
+    }
+  });
+
+  mesh = null;
+}
+
+// PAPAR MODEL TERUS DI KAMERA
 
 function showShape(name, objectName) {
 
@@ -567,22 +608,12 @@ function showShape(name, objectName) {
 
   currentShape = name;
 
-  if (mesh) {
-
-    scene.remove(mesh);
-
-    mesh.traverse(function(child) {
-      if (child.geometry) child.geometry.dispose();
-
-      if (child.material) {
-        child.material.dispose();
-      }
-    });
-
-    mesh = null;
-  }
+  removeMesh();
 
   if (!name) {
+
+    badgeEl.textContent =
+      "Mencari bentuk...";
 
     infoEl.innerHTML =
       '<p class="muted">' +
@@ -593,16 +624,16 @@ function showShape(name, objectName) {
     return;
   }
 
-  if (!scene) return;
-
   const geometry = makeGeometry(name);
 
   if (!geometry) return;
 
   const material = new THREE.MeshStandardMaterial({
     color: 0x79c6dd,
-    roughness: 0.75,
-    metalness: 0
+    roughness: 0.7,
+    metalness: 0,
+    transparent: true,
+    opacity: 0.92
   });
 
   mesh = new THREE.Mesh(
@@ -610,22 +641,30 @@ function showShape(name, objectName) {
     material
   );
 
-  mesh.rotation.set(0.18, 0.38, 0);
+  mesh.rotation.set(0.2, 0.4, 0);
 
   scene.add(mesh);
 
-  // GARIS TEPI BENTUK
+  const edgeGeometry =
+    new THREE.EdgesGeometry(geometry);
+
+  const edgeMaterial =
+    new THREE.LineBasicMaterial({
+      color: 0x286b8a
+    });
 
   const edges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(geometry),
-    new THREE.LineBasicMaterial({
-      color: 0x326c86
-    })
+    edgeGeometry,
+    edgeMaterial
   );
 
   mesh.add(edges);
 
-  // MAKLUMAT BENTUK
+  badgeEl.textContent =
+    name.charAt(0).toUpperCase() +
+    name.slice(1);
+
+  // MAKLUMAT GEOMETRI
 
   const item = shapes[name];
 
@@ -651,10 +690,9 @@ function showShape(name, objectName) {
 
   const ul = document.createElement("ul");
 
-  item.facts.forEach(function(fact) {
+  item.facts.forEach(fact => {
 
     const li = document.createElement("li");
-
     li.textContent = fact;
 
     ul.appendChild(li);
@@ -668,6 +706,15 @@ function showShape(name, objectName) {
   );
 }
 
+// ANIMASI 3D
+
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera3d);
+}
+
+animate();
+
 // TUTUP KAMERA
 
 function stopCamera() {
@@ -677,7 +724,7 @@ function stopCamera() {
 
   if (stream) {
 
-    stream.getTracks().forEach(function(track) {
+    stream.getTracks().forEach(track => {
       track.stop();
     });
 
@@ -692,9 +739,18 @@ function stopCamera() {
     overlay.height
   );
 
-  startBtn.disabled = false;
+  showShape(null);
 
-  statusEl.textContent = "Kamera ditutup.";
+  detectedEl.textContent =
+    "Objek dikesan: —";
+
+  badgeEl.textContent =
+    "Sedia untuk mengimbas";
+
+  statusEl.textContent =
+    "Kamera ditutup.";
+
+  startBtn.disabled = false;
 }
 
 // BUKA KAMERA
@@ -707,7 +763,8 @@ async function startCamera() {
 
   startBtn.disabled = true;
 
-  statusEl.textContent = "Membuka kamera...";
+  statusEl.textContent =
+    "Membuka kamera...";
 
   try {
 
@@ -715,7 +772,7 @@ async function startCamera() {
         !navigator.mediaDevices.getUserMedia) {
 
       throw new Error(
-        "Pelayar tidak menyokong akses kamera."
+        "Pelayar tidak menyokong kamera."
       );
     }
 
@@ -739,12 +796,13 @@ async function startCamera() {
     }
 
     stream = newStream;
+
     video.srcObject = stream;
 
     await video.play();
 
     statusEl.textContent =
-      "Memuatkan sistem pengecaman objek...";
+      "Memuatkan sistem pengecaman...";
 
     if (!window.cocoSsd) {
 
@@ -753,8 +811,8 @@ async function startCamera() {
       );
     }
 
-    if (!model) {
-      model = await cocoSsd.load();
+    if (!aiModel) {
+      aiModel = await cocoSsd.load();
     }
 
     if (id !== session) return;
@@ -775,7 +833,7 @@ async function startCamera() {
   }
 }
 
-// KESAN OBJEK SECARA LANGSUNG
+// KESAN OBJEK
 
 async function detect(id) {
 
@@ -786,7 +844,7 @@ async function detect(id) {
     if (video.readyState >= 2) {
 
       const predictions =
-        await model.detect(video);
+        await aiModel.detect(video);
 
       if (!running || id !== session) return;
 
@@ -803,7 +861,7 @@ async function detect(id) {
         .filter(p => p.score >= 0.55)
         .sort((a, b) => b.score - a.score);
 
-      found.forEach(function(p) {
+      found.forEach(p => {
 
         const [x, y, w, h] = p.bbox;
 
@@ -812,16 +870,14 @@ async function detect(id) {
 
         ctx.strokeRect(x, y, w, h);
 
-        ctx.font = "18px Arial";
-
         const label =
           p.class + " " +
           Math.round(p.score * 100) + "%";
 
-        const width = Math.min(
-          ctx.measureText(label).width + 14,
-          overlay.width - x
-        );
+        ctx.font = "18px Arial";
+
+        const width =
+          ctx.measureText(label).width + 14;
 
         ctx.fillStyle = "#173b4d";
 
@@ -875,7 +931,7 @@ async function detect(id) {
 
   if (running && id === session) {
 
-    setTimeout(function() {
+    setTimeout(() => {
       detect(id);
     }, 500);
   }
@@ -893,10 +949,6 @@ window.addEventListener(
   "pagehide",
   stopCamera
 );
-
-// MULAKAN PAPARAN 3D
-
-init3D();
 
 </script>
 
